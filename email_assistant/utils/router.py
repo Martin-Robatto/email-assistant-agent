@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 from typing import Literal
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-from email_assistant.utils.tools import write_email, schedule_meeting, check_calendar_availability  
+from email_assistant.tools import write_email, schedule_meeting, check_calendar_availability
 
 load_dotenv()
 

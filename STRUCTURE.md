@@ -1,75 +1,121 @@
 # Email Assistant Project Structure
 
-This document describes the organized structure of the email assistant project.
+This document describes the refactored project structure with organized folders for better maintainability.
 
-## Directory Structure
+## Project Layout
 
 ```
-email-assistant/
-├── __init__.py                 # Package initialization, exports graph
-├── agent.py                    # Graph construction with triage router
-├── utils/                      # Utilities for the agent graph
-│   ├── __init__.py            # Exports all utilities
-│   ├── state.py               # State definition with email_input and classification
-│   ├── nodes.py               # Node functions (triage_router, agent_node, tool_node)
-│   ├── tools.py               # Tools (write_email, schedule_meeting, etc.)
-│   ├── router.py              # RouterSchema and LLM initialization
-│   ├── helpers.py             # Helper functions (parse_email, format_email_markdown)
-│   └── prompts.py             # Prompt templates for triage
-├── .env                        # Environment variables
-├── langgraph.json             # LangGraph configuration
-└── requirements.txt           # Package dependencies
+email_assistant/
+├── __init__.py              # Main package exports
+├── agent.py                 # Graph construction and compilation
+│
+├── nodes/                   # Graph nodes (one file per node)
+│   ├── __init__.py         # Node exports
+│   ├── triage_router.py    # Email classification node
+│   ├── agent_node.py       # Agent reasoning node (LLM + tools)
+│   ├── tool_node.py        # Tool execution node
+│   └── routing.py          # Routing functions (should_respond, should_continue)
+│
+├── prompts/                 # Prompt templates
+│   ├── __init__.py         # Prompt exports
+│   ├── defaults.py         # Default configuration values
+│   ├── triage_prompts.py   # Triage classification prompts
+│   └── agent_prompts.py    # Agent response generation prompts
+│
+├── tools/                   # LangChain tools
+│   ├── __init__.py         # Tool exports
+│   ├── email_tools.py      # Email-related tools (write_email)
+│   └── calendar_tools.py   # Calendar tools (schedule_meeting, check_availability)
+│
+├── helpers/                 # Helper utilities
+│   ├── __init__.py         # Helper exports
+│   ├── email_parser.py     # Email parsing functions
+│   └── email_formatter.py  # Email formatting functions
+│
+└── utils/                   # Core utilities
+    ├── __init__.py         # Utility exports
+    ├── state.py            # Graph state definition
+    └── router.py           # LLM initialization and routing schema
 ```
 
-## File Descriptions
+## Architecture Overview
 
-### Core Files
+### Graph Flow
 
-- **[`agent.py`](email-assistant/agent.py:1)**: Constructs the LangGraph workflow with nodes for triage routing, response generation, and tool execution.
+1. **START** → `triage_router` → Classifies email (respond/notify/ignore)
+2. `triage_router` → `agent` (if respond) or **END** (if notify/ignore)
+3. `agent` → LLM reasoning (decides which tools to call)
+4. `agent` → `tools` (if tool calls exist) or **END** (if done)
+5. `tools` → Executes tools → back to `agent` (ReAct loop)
+6. Loop continues until agent marks task as complete
 
-- **[`utils/state.py`](email-assistant/utils/state.py:1)**: Defines the `State` class that extends `MessagesState` with:
-  - `email_input`: Dictionary containing email data
-  - `classification_decision`: Literal type for "ignore", "respond", or "notify"
+### Key Components
 
-### Node Functions
+#### Nodes (`email_assistant/nodes/`)
+- **`triage_router.py`**: Analyzes incoming emails and classifies them
+- **`agent_node.py`**: Main reasoning node where LLM decides actions
+- **`tool_node.py`**: Executes tools (email sending, calendar operations)
+- **`routing.py`**: Contains routing logic for conditional edges
 
-- **[`utils/nodes.py`](email-assistant/utils/nodes.py:1)**: Contains node functions:
-  - `triage_router()`: Analyzes emails and routes them based on classification
-  - `agent_node()`: Main agent processing node
-  - `tool_node()`: Executes tools
+#### Prompts (`email_assistant/prompts/`)
+- **`defaults.py`**: Default configuration values (background, preferences)
+- **`triage_prompts.py`**: Prompts for email classification
+- **`agent_prompts.py`**: Prompts for response generation
 
-### Supporting Modules
+#### Tools (`email_assistant/tools/`)
+- **`email_tools.py`**: Email operations (write_email)
+- **`calendar_tools.py`**: Calendar operations (schedule_meeting, check_availability)
 
-- **[`utils/router.py`](email-assistant/utils/router.py:1)**: 
-  - `RouterSchema`: Pydantic model for structured output with reasoning and classification
-  - `llm_router`: Initialized LLM with structured output
+#### Helpers (`email_assistant/helpers/`)
+- **`email_parser.py`**: Parse email data structures
+- **`email_formatter.py`**: Format emails as markdown
 
-- **[`utils/helpers.py`](email-assistant/utils/helpers.py:1)**:
-  - `parse_email()`: Extracts email components from input dictionary
-  - `format_email_markdown()`: Formats email as markdown
+#### Utils (`email_assistant/utils/`)
+- **`state.py`**: GraphState definition (extends MessagesState)
+- **`router.py`**: LLM instances (llm_router, llm_with_tools) and RouterSchema
 
-- **[`utils/prompts.py`](email-assistant/utils/prompts.py:1)**:
-  - System and user prompts for email triage
-  - Default background and instructions
+## Benefits of This Structure
 
-- **[`utils/tools.py`](email-assistant/utils/tools.py:1)**:
-  - `write_email()`: Tool for sending emails
-  - `schedule_meeting()`: Tool for scheduling meetings
-  - `check_calendar_availability()`: Tool for checking calendar
-  - `Done`: Completion marker
+1. **Modularity**: Each component has a single responsibility
+2. **Scalability**: Easy to add new nodes, tools, or prompts
+3. **Maintainability**: Clear organization makes code easier to understand
+4. **Testability**: Individual components can be tested in isolation
+5. **Reusability**: Components can be imported and used independently
 
-## Graph Flow
+## Usage
 
-1. **START** → `triage_router`
-2. `triage_router` analyzes email and routes to:
-   - `response_agent` (if classification = "respond")
-   - `__end__` (if classification = "ignore" or "notify")
-3. `response_agent` → `tools` → **END**
+```python
+from email_assistant import graph
 
-## Key Features
+# Run the email assistant
+result = graph.invoke(
+    {"email_input": email_data},
+    config={"configurable": {"thread_id": "test-1"}}
+)
+```
 
-- **Email Classification**: Automatically categorizes emails as ignore, notify, or respond
-- **Structured Output**: Uses Pydantic models for type-safe LLM responses
-- **Modular Design**: Separated concerns across multiple files
-- **Tool Integration**: Ready for email sending and calendar management
-- **State Management**: Tracks email data and classification decisions
+## Adding New Components
+
+### Adding a New Node
+1. Create `email_assistant/nodes/new_node.py`
+2. Implement node function(s)
+3. Export in `email_assistant/nodes/__init__.py`
+4. Wire it in `email_assistant/agent.py`
+
+### Adding a New Tool
+1. Create tool in appropriate file under `email_assistant/tools/`
+2. Export in `email_assistant/tools/__init__.py`
+3. Add to tools list in `email_assistant/nodes/tool_node.py`
+4. Update `email_assistant/utils/router.py` tool bindings if needed
+
+### Adding New Prompts
+1. Add prompts to appropriate file under `email_assistant/prompts/`
+2. Export in `email_assistant/prompts/__init__.py`
+3. Use in relevant node files
+
+## Model Configuration
+
+- **gpt-4o-mini**: Used for triage (fast, cheap classification)
+- **gpt-4o**: Used for agent reasoning (quality responses, reliable tool calling)
+
+See `email_assistant/utils/router.py` for model initialization.
