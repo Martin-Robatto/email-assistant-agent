@@ -65,9 +65,17 @@ START → Triage Router → Classification Decision
 
 3. **Configure environment variables**
    
-   Create a `.env` file in the project root:
+   Copy the example environment file and configure your API keys:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Then edit `.env` with your credentials:
    ```env
    OPENAI_API_KEY=your_openai_api_key_here
+   LANGSMITH_API_KEY=your_langsmith_api_key_here (optional)
+   LANGSMITH_TRACING=true (optional)
+   LANGSMITH_PROJECT=email-assistant (optional)
    ```
 
 ## 🛠️ Available Tools
