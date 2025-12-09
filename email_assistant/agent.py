@@ -4,7 +4,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from email_assistant.utils import GraphState
-from email_assistant.utils.nodes import triage_router, agent_node, should_respond, should_continue, tool_node
+from email_assistant.nodes import triage_router, agent_node, should_respond, should_continue, tool_node
 
 
 def create_graph():
