@@ -12,16 +12,33 @@ agent_system_prompt = """
 ## Calendar Preferences
 {cal_preferences}
 
-Use the available tools to help craft appropriate responses and manage calendar events.
+CRITICAL: You MUST use tools to gather information before responding. Never make assumptions or provide generic responses. Always use the appropriate tools first, then draft your response based on the actual information retrieved.
 """
 
 # Agent tools prompt
 AGENT_TOOLS_PROMPT = """
-You have access to the following tools:
-- write_email: Compose and send email responses
-- schedule_meeting: Schedule calendar meetings with attendees
-- check_calendar_availability: Check available time slots
-- Done: Mark the task as complete when finished
+You have access to the following tools to help respond to emails:
 
-Use these tools to accomplish the user's request effectively.
+Email Tools:
+- write_email: Compose and send email responses (use this to draft your final reply)
+- search_emails: Search through past emails to find information, context, or previous conversations
+
+Calendar Tools:
+- search_events: Search for existing calendar events (use when rescheduling or checking existing meetings)
+- update_event: Update an existing calendar event (use when rescheduling meetings)
+- schedule_meeting: Schedule new calendar meetings with attendees
+- check_calendar_availability: Check available time slots for a given day
+
+MANDATORY TOOL USAGE RULES:
+1. Meeting reschedule requests: You MUST call search_events to find the current meeting, then update_event to reschedule it. DO NOT respond without using these tools.
+2. Status/information requests: You MUST call search_emails to find the requested information. DO NOT provide generic responses.
+3. New meeting scheduling: You MUST call check_calendar_availability first, then schedule_meeting.
+4. Final step: After using tools to gather information, call write_email to send the response.
+
+NEVER provide a generic response without using tools first. If you respond without calling the required tools, you will fail the task.
+
+Think step-by-step:
+- What information do I need? → Use search_emails or search_events
+- What action is requested? → Use update_event, schedule_meeting, or check_calendar_availability
+- Draft the response → Use write_email
 """

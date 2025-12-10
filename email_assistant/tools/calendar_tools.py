@@ -44,3 +44,40 @@ def check_calendar_availability(day: str) -> str:
     """
     # Placeholder response - in real app would check actual calendar
     return f"Available times on {day}: 9:00 AM, 2:00 PM, 4:00 PM"
+
+
+@tool
+def search_events(query: str, start_date: str = None, end_date: str = None) -> str:
+    """Search for calendar events.
+    
+    Args:
+        query: Search query (e.g., subject, attendee name)
+        start_date: Optional start date to search from
+        end_date: Optional end date to search until
+        
+    Returns:
+        List of matching calendar events
+    """
+    # Placeholder response - in real app would search actual calendar
+    return f"Found events matching '{query}': Meeting with John Doe on Thursday at 2:00 PM"
+
+
+@tool
+def update_event(event_id: str, new_start_time: str = None, new_date: str = None) -> str:
+    """Update an existing calendar event.
+    
+    Args:
+        event_id: ID of the event to update
+        new_start_time: New start time for the event
+        new_date: New date for the event
+        
+    Returns:
+        Confirmation message with updated event details
+    """
+    # Placeholder response - in real app would update actual calendar
+    details = []
+    if new_date:
+        details.append(f"date to {new_date}")
+    if new_start_time:
+        details.append(f"time to {new_start_time}")
+    return f"Event {event_id} updated: " + ", ".join(details)
