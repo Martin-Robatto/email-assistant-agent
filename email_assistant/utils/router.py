@@ -3,7 +3,14 @@ from langchain_openai import ChatOpenAI
 from typing import Literal
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-from email_assistant.tools import write_email, schedule_meeting, check_calendar_availability
+from email_assistant.tools import (
+    write_email,
+    schedule_meeting,
+    check_calendar_availability,
+    search_events,
+    update_event,
+    search_emails,
+)
 
 load_dotenv()
 
@@ -22,10 +29,15 @@ class RouterSchema(BaseModel):
 
 
 # Initialize the router LLM with structured output for email classification
-llm_router = ChatOpenAI(model="gpt-4o-mini").with_structured_output(
-    RouterSchema
-)
+llm_router = ChatOpenAI(model="gpt-4o-mini").with_structured_output(RouterSchema)
 
 # Initialize the main LLM with tools for email response generation
-tools = [write_email, schedule_meeting, check_calendar_availability]
+tools = [
+    write_email,
+    search_emails,
+    schedule_meeting,
+    check_calendar_availability,
+    search_events,
+    update_event,
+]
 llm_with_tools = ChatOpenAI(model="gpt-4o", temperature=0).bind_tools(tools)
