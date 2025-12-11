@@ -15,7 +15,7 @@ def schedule_meeting(
     preferred_day: datetime,
     start_time: int,
 ) -> str:
-    """Schedule a calendar meeting.
+    """Schedule new calendar meetings with attendees.
     
     Args:
         attendees: List of attendee email addresses
@@ -34,7 +34,7 @@ def schedule_meeting(
 
 @tool
 def check_calendar_availability(day: str) -> str:
-    """Check calendar availability for a given day.
+    """Check available time slots for a given day.
     
     Args:
         day: The day to check (e.g., "Monday", "2024-12-09", "tomorrow")
@@ -48,7 +48,7 @@ def check_calendar_availability(day: str) -> str:
 
 @tool
 def search_events(query: str, start_date: str = None, end_date: str = None) -> str:
-    """Search for calendar events.
+    """Search for existing calendar events (use when rescheduling or checking existing meetings).
     
     Args:
         query: Search query (e.g., subject, attendee name)
@@ -64,7 +64,7 @@ def search_events(query: str, start_date: str = None, end_date: str = None) -> s
 
 @tool
 def update_event(event_id: str, new_start_time: str = None, new_date: str = None) -> str:
-    """Update an existing calendar event.
+    """Update an existing calendar event (use when rescheduling meetings).
     
     Args:
         event_id: ID of the event to update

@@ -1,7 +1,7 @@
 """Triage router node for email classification."""
 
 from email_assistant.utils.state import GraphState
-from email_assistant.utils.router import llm_router
+from email_assistant.utils.router import get_llm_router
 from email_assistant.helpers import parse_email, format_email_markdown
 from email_assistant.prompts import (
     triage_system_prompt,
@@ -29,7 +29,7 @@ def triage_router(state: GraphState) -> GraphState:
         author=author, to=to, subject=subject, email_thread=email_thread
     )
 
-    result = llm_router.invoke(
+    result = get_llm_router().invoke(
         [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},

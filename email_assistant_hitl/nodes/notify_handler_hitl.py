@@ -5,7 +5,7 @@ from email_assistant_hitl.utils.state import GraphState
 from email_assistant_hitl.helpers import parse_email, format_email_markdown
 
 
-def triage_interrupt_handler(state: GraphState) -> GraphState:
+def notify_handler_hitl(state: GraphState) -> GraphState:
     """Handle interrupts from the triage step when email is classified as 'notify'.
     
     This node creates an interrupt to show the email to the user and allows them

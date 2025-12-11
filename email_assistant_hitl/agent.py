@@ -5,13 +5,13 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from email_assistant_hitl.utils import GraphState
-from email_assistant_hitl.nodes.triage_router import triage_router as classify_email
-from email_assistant_hitl.nodes.triage_interrupt_handler import triage_interrupt_handler as review_notification
-from email_assistant_hitl.nodes.agent_node_hitl import agent_node_hitl as draft_response
-from email_assistant_hitl.nodes.interrupt_handler import interrupt_handler as review_action
+from email_assistant_hitl.nodes.triage_router import triage_router
+from email_assistant_hitl.nodes.notify_handler_hitl import notify_handler_hitl
+from email_assistant_hitl.nodes.agent_node_hitl import agent_node_hitl
+from email_assistant_hitl.nodes.action_handler_hitl import action_handler_hitl
 
 
-def should_respond(state: GraphState) -> Literal["draft_response", "review_notification", "__end__"]:
+def should_respond(state: GraphState) -> Literal["agent_node_hitl", "review_notification", "__end__"]:
     """Route based on email classification.
     
     Args:
@@ -23,14 +23,14 @@ def should_respond(state: GraphState) -> Literal["draft_response", "review_notif
     classification = state["classification_decision"]
     
     if classification == "respond":
-        return "draft_response"
+        return "agent_node_hitl"
     elif classification == "notify":
         return "review_notification"
     else:  # ignore
         return "__end__"
 
 
-def should_continue_after_review(state: GraphState) -> Literal["draft_response", "__end__"]:
+def should_continue_after_review(state: GraphState) -> Literal["agent_node_hitl", "__end__"]:
     """Route after notification review based on user response.
     
     If user provided feedback (messages were added), go to agent.
@@ -44,7 +44,7 @@ def should_continue_after_review(state: GraphState) -> Literal["draft_response",
     """
     # If messages were added by notification review, user wants to respond
     if state.get("messages"):
-        return "draft_response"
+        return "agent_node_hitl"
     else:
         return "__end__"
 
@@ -70,7 +70,7 @@ def should_continue_drafting(state: GraphState) -> Literal["review_action", "__e
     return "__end__"
 
 
-def should_continue_after_action_review(state: GraphState) -> Literal["draft_response", "__end__"]:
+def should_continue_after_action_review(state: GraphState) -> Literal["agent_node_hitl", "__end__"]:
     """Route after action review based on user response.
     
     If user ignored, workflow ends. Otherwise loop back to draft more actions.
@@ -78,7 +78,7 @@ def should_continue_after_action_review(state: GraphState) -> Literal["draft_res
     if state.get("workflow_should_end"):
         return "__end__"
     else:
-        return "draft_response"
+        return "agent_node_hitl"
 
 
 def create_graph():
@@ -94,58 +94,58 @@ def create_graph():
     workflow = StateGraph(GraphState)
     
     # Add all nodes with descriptive names
-    workflow.add_node("classify_email", classify_email)
-    workflow.add_node("review_notification", review_notification)
-    workflow.add_node("draft_response", draft_response)
-    workflow.add_node("review_action", review_action)
+    workflow.add_node("triage_router", triage_router)
+    workflow.add_node("notify_handler_hitl", notify_handler_hitl)
+    workflow.add_node("agent_node_hitl", agent_node_hitl)
+    workflow.add_node("action_handler_hitl", action_handler_hitl)
     
     # Start by classifying the email
-    workflow.add_edge(START, "classify_email")
+    workflow.add_edge(START, "triage_router")
     
-    # From classify_email, route based on classification
+    # From triage_router, route based on classification
     workflow.add_conditional_edges(
-        "classify_email",
+        "triage_router",
         should_respond,
         {
-            "draft_response": "draft_response",
-            "review_notification": "review_notification",
+            "agent_node_hitl": "agent_node_hitl",
+            "notify_handler_hitl": "notify_handler_hitl",
             "__end__": END,
         },
     )
     
-    # From review_notification, route based on user response
+    # From notify_handler_hitl, route based on user response
     workflow.add_conditional_edges(
-        "review_notification",
+        "notify_handler_hitl",
         should_continue_after_review,
         {
-            "draft_response": "draft_response",
+            "agent_node_hitl": "agent_node_hitl",
             "__end__": END,
         },
     )
     
-    # From draft_response, check if Done tool was called
+    # From agent_node_hitl, check if Done tool was called
     workflow.add_conditional_edges(
-        "draft_response",
+        "agent_node_hitl",
         should_continue_drafting,
         {
-            "review_action": "review_action",
+            "action_handler_hitl": "action_handler_hitl",
             "__end__": END,
         },
     )
     
     # After review_action, check if user ignored or approved
     workflow.add_conditional_edges(
-        "review_action",
+        "action_handler_hitl",
         should_continue_after_action_review,
         {
-            "draft_response": "draft_response",
+            "agent_node_hitl": "agent_node_hitl",
             "__end__": END,
         },
     )
     
-    # Compile with memory
     memory = MemorySaver()
     graph = workflow.compile(checkpointer=memory)
+    graph.get_graph().draw_mermaid_png(output_file_path="email_assistant_hitl/graph.png")
     
     return graph
 

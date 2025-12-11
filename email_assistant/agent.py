@@ -1,8 +1,6 @@
 """Agent graph construction."""
 
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import MemorySaver
-
 from email_assistant.utils import GraphState
 from email_assistant.nodes import triage_router, agent_node, should_respond, should_continue, tool_node
 
@@ -48,10 +46,9 @@ def create_graph():
     # After tools execute, loop back to agent for next reasoning step
     workflow.add_edge("tools", "agent")
 
-    # Compile the graph with memory
-    memory = MemorySaver()
-    graph = workflow.compile(checkpointer=memory)
-    graph.get_graph().draw_mermaid_png(output_file_path="graph.png")
+    # Compile the graph
+    graph = workflow.compile()
+    graph.get_graph().draw_mermaid_png(output_file_path="email_assistant/graph.png")
 
     return graph
 
