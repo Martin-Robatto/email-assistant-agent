@@ -11,7 +11,6 @@ from email_assistant.tools import (
 )
 
 
-# Create the tool node for executing tools
 tools = [
     write_email,
     search_emails,
@@ -20,4 +19,5 @@ tools = [
     search_events,
     update_event,
 ]
+
 tool_node = ToolNode(tools)

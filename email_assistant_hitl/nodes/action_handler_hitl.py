@@ -29,7 +29,7 @@ tools_by_name = {
 }
 
 
-def interrupt_handler(state: GraphState) -> GraphState:
+def action_handler_hitl(state: GraphState) -> GraphState:
     """Handle interrupts for tool calls that require human review.
     
     This node examines tool calls from the agent and:

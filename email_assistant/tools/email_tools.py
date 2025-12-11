@@ -8,7 +8,7 @@ load_dotenv()
 
 @tool
 def write_email(to: str, subject: str, content: str) -> str:
-    """Write and send an email.
+    """Compose and send email responses (use this to draft your final reply).
     
     Args:
         to: Email recipient address
@@ -24,7 +24,7 @@ def write_email(to: str, subject: str, content: str) -> str:
 
 @tool
 def search_emails(query: str, sender: str = None, date_range: str = None) -> str:
-    """Search through emails to find specific information or threads.
+    """Search through past emails to find information, context, or previous conversations.
     
     Args:
         query: Search query (keywords, subject, content)
