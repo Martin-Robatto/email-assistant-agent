@@ -55,8 +55,9 @@ def get_llm_router():
     """Get the router LLM instance."""
     return create_router(RouterSchema)
 
-def get_llm_router_with_tools():
+def get_llm_router_with_tools(model_name: str = "gpt-4o-mini"):
     """Get the router LLM instance with tools."""
-    return create_router(RouterSchema).bind_tools(tools)
+    llm = ChatOpenAI(model=model_name)
+    return llm.bind_tools(tools)
 
 

@@ -14,16 +14,23 @@ def extract_tool_calls(messages: list) -> List[str]:
     """
     tool_calls = []
     for message in messages:
-        # Check for tool_calls in message
-        if isinstance(message, dict) and "tool_calls" in message:
+        # Check for tool_calls in message (AIMessage object or dict)
+        if hasattr(message, "tool_calls") and message.tool_calls:
+            for tool_call in message.tool_calls:
+                tool_calls.append(tool_call["name"].lower())
+        elif isinstance(message, dict) and "tool_calls" in message:
             for tool_call in message["tool_calls"]:
                 tool_calls.append(tool_call["name"].lower())
         
-        # Also check if message has a 'name' field (ToolMessage)
-        if isinstance(message, dict) and message.get("type") == "tool":
+        # Also check if message is a ToolMessage (object or dict)
+        tool_name = ""
+        if hasattr(message, "type") and message.type == "tool":
+            tool_name = getattr(message, "name", "")
+        elif isinstance(message, dict) and message.get("type") == "tool":
             tool_name = message.get("name", "")
-            if tool_name:
-                tool_calls.append(tool_name.lower())
+            
+        if tool_name:
+            tool_calls.append(tool_name.lower())
     
     return list(set(tool_calls))  # Remove duplicates
 
