@@ -81,7 +81,7 @@ def should_continue_after_action_review(state: GraphState) -> Literal["agent_nod
         return "agent_node_hitl"
 
 
-def create_graph():
+def create_graph(checkpointer=None):
     """Create and compile the HITL-enabled agent graph.
     
     Uses conditional edges throughout for clear routing logic.
@@ -108,7 +108,7 @@ def create_graph():
         should_respond,
         {
             "agent_node_hitl": "agent_node_hitl",
-            "notify_handler_hitl": "notify_handler_hitl",
+            "review_notification": "notify_handler_hitl",
             "__end__": END,
         },
     )
@@ -128,7 +128,7 @@ def create_graph():
         "agent_node_hitl",
         should_continue_drafting,
         {
-            "action_handler_hitl": "action_handler_hitl",
+            "review_action": "action_handler_hitl",
             "__end__": END,
         },
     )
@@ -143,12 +143,11 @@ def create_graph():
         },
     )
     
-    memory = MemorySaver()
-    graph = workflow.compile(checkpointer=memory)
+    graph = workflow.compile(checkpointer=checkpointer)
     graph.get_graph().draw_mermaid_png(output_file_path="email_assistant_hitl/graph.png")
     
     return graph
 
 
 # Create the HITL graph instance
-graph = create_graph()
+graph = create_graph(checkpointer=None)
