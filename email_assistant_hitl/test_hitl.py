@@ -54,7 +54,7 @@ while True:
         print("Interrupt payload:", interrupt_value)
         
         print("\n👇 ENTER YOUR ACTION BELOW 👇")
-        print("Options: 'response <text>', 'accept', 'ignore'")
+        print("Options: 'response <text>', 'accept', 'ignore', 'edit <json_args>'")
         print("Tip: Type 'schedule meeting for tomorrow at 10am' to test the flow")
         user_input_raw = input("Your action: ")
         print(f"DEBUG: You entered '{user_input_raw}'")
@@ -64,6 +64,20 @@ while True:
              resume_payload = {"type": "accept"}
         elif user_input_raw.lower() == "ignore":
              resume_payload = {"type": "ignore"}
+        elif user_input_raw.startswith("edit "):
+             # Parse edit command: edit {"key": "value", ...}
+             import json
+             json_str = user_input_raw.replace("edit ", "", 1)
+             try:
+                 edited_args = json.loads(json_str)
+                 resume_payload = {
+                    "type": "edit",
+                    "args": {"args": edited_args}
+                 }
+             except json.JSONDecodeError as e:
+                 print(f"ERROR: Invalid JSON for edit command: {e}")
+                 print("Defaulting to 'ignore'")
+                 resume_payload = {"type": "ignore"}
         else:
              # Default to response
              text = user_input_raw.replace("response ", "", 1) if user_input_raw.startswith("response") else user_input_raw
