@@ -11,7 +11,7 @@ from email_assistant_hitl.tools import (
     update_event,
     search_emails,
     Question,
-    Done,
+    Question,
 )
 
 load_dotenv()
@@ -33,7 +33,7 @@ class RouterSchema(BaseModel):
 # Initialize the router LLM with structured output for email classification
 llm_router = ChatOpenAI(model="gpt-4o-mini").with_structured_output(RouterSchema)
 
-# Initialize the HITL LLM with additional tools (Question, Done)
+# Initialize the HITL LLM with additional tools (Question)
 tools_hitl = [
     write_email,
     search_emails,
@@ -42,7 +42,6 @@ tools_hitl = [
     search_events,
     update_event,
     Question,
-    Done,
 ]
 
-llm_with_tools_hitl = ChatOpenAI(model="gpt-4o", temperature=0).bind_tools(tools_hitl, tool_choice="required")
+llm_with_tools_hitl = ChatOpenAI(model="gpt-4o", temperature=0).bind_tools(tools_hitl)

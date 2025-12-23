@@ -7,7 +7,7 @@ from email_assistant_hitl.tools.calendar_tools import (
     search_events,
     update_event,
 )
-from email_assistant_hitl.tools.hitl_tools import Question, Done
+from email_assistant_hitl.tools.hitl_tools import Question
 
 __all__ = [
     "write_email",
@@ -17,5 +17,4 @@ __all__ = [
     "search_events",
     "update_event",
     "Question",
-    "Done",
 ]

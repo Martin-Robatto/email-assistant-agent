@@ -12,7 +12,7 @@ def schedule_meeting(
     attendees: list[str],
     subject: str,
     duration_minutes: int,
-    preferred_day: datetime,
+    preferred_day: str,
     start_time: int,
 ) -> str:
     """Schedule a calendar meeting.
@@ -21,15 +21,14 @@ def schedule_meeting(
         attendees: List of attendee email addresses
         subject: Meeting subject/title
         duration_minutes: Meeting duration in minutes
-        preferred_day: Preferred date for the meeting
+        preferred_day: Preferred date for the meeting (e.g., "tomorrow", "next Monday", "2024-12-25")
         start_time: Meeting start time (hour in 24h format)
         
     Returns:
         Confirmation message with meeting details
     """
     # Placeholder response - in real app would check calendar and schedule
-    date_str = preferred_day.strftime("%A, %B %d, %Y")
-    return f"Meeting '{subject}' scheduled on {date_str} at {start_time} for {duration_minutes} minutes with {len(attendees)} attendees"
+    return f"Meeting '{subject}' scheduled on {preferred_day} at {start_time} for {duration_minutes} minutes with {len(attendees)} attendees"
 
 
 @tool
