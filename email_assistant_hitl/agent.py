@@ -3,6 +3,7 @@
 from typing import Literal
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.store.memory import InMemoryStore
 
 from email_assistant_hitl.utils import GraphState
 from email_assistant_hitl.nodes.triage_router import triage_router
@@ -26,7 +27,7 @@ def should_respond(state: GraphState) -> Literal["agent_node_hitl", "notify_hand
         return "agent_node_hitl"
     elif classification == "notify":
         return "notify_handler_hitl"
-    else:  # ignore
+    else:
         return "__end__"
 
 
@@ -42,7 +43,6 @@ def should_continue_after_review(state: GraphState) -> Literal["agent_node_hitl"
     Returns:
         The next node to route to.
     """
-    # If messages were added by notification review, user wants to respond
     if state.get("messages"):
         return "agent_node_hitl"
     else:
@@ -79,7 +79,7 @@ def should_continue_after_action_review(state: GraphState) -> Literal["agent_nod
         return "agent_node_hitl"
 
 
-def create_graph(checkpointer=None):
+def create_graph(checkpointer=None, store=None):
     """Create and compile the HITL-enabled agent graph.
     
     Uses conditional edges throughout for clear routing logic.
@@ -141,7 +141,7 @@ def create_graph(checkpointer=None):
         },
     )
     
-    graph = workflow.compile(checkpointer=checkpointer)
+    graph = workflow.compile(checkpointer=checkpointer, store=store)
     graph.get_graph().draw_mermaid_png(output_file_path="email_assistant_hitl/graph.png")
     
     return graph
@@ -149,4 +149,5 @@ def create_graph(checkpointer=None):
 
 # Create the HITL graph instance
 checkpointer = MemorySaver()
-graph = create_graph(checkpointer=checkpointer)
+store = InMemoryStore()
+graph = create_graph(checkpointer=checkpointer, store=store)

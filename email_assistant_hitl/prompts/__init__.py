@@ -13,6 +13,7 @@ from email_assistant_hitl.prompts.triage_prompts import (
 from email_assistant_hitl.prompts.agent_prompts import (
     agent_system_prompt,
     AGENT_TOOLS_PROMPT,
+    AGENT_TOOLS_PROMPT_HITL,
 )
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "triage_user_prompt",
     "agent_system_prompt",
     "AGENT_TOOLS_PROMPT",
+    "AGENT_TOOLS_PROMPT_HITL",
 ]
