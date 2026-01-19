@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import uuid
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.store.memory import InMemoryStore
 from email_assistant_hitl.agent import create_graph
 from langgraph.types import Command
 from langgraph.types import Command
@@ -32,7 +33,8 @@ thread_id = uuid.uuid4()
 thread_config = {"configurable": {"thread_id": thread_id}}
 
 # Create the graph with a memory saver for local testing
-graph = create_graph(checkpointer=MemorySaver())
+store = InMemoryStore()
+graph = create_graph(checkpointer=MemorySaver(), store=store)
 
 response = graph.invoke({"email_input": email_input}, config=thread_config)
 
@@ -43,7 +45,10 @@ while True:
 
     if not state.next:
         print("\n✅ Graph finished.")
-        print("Result:", state.values["messages"][-1].content)
+        if state.values.get("messages"):
+            print("Result:", state.values["messages"][-1].content)
+        else:
+            print("Result: Workflow completed with no output messages (likely ignored).")
         break
 
     print(f"\n⏸️ Graph paused at: {state.next}")
