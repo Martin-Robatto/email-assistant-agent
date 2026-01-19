@@ -1,6 +1,8 @@
 """Agent graph construction."""
 
 from langgraph.graph import StateGraph, START, END
+
+
 from email_assistant.utils import GraphState
 from email_assistant.nodes import triage_router, agent_node, should_respond, should_continue, tool_node
 
@@ -46,9 +48,10 @@ def create_graph():
     # After tools execute, loop back to agent for next reasoning step
     workflow.add_edge("tools", "agent")
 
-    # Compile the graph
+    # Compile the graph with memory
+    # Compile the graph without custom checkpointer (handled by platform)
     graph = workflow.compile()
-    graph.get_graph().draw_mermaid_png(output_file_path="email_assistant/graph.png")
+    graph.get_graph().draw_mermaid_png(output_file_path="graph.png")
 
     return graph
 

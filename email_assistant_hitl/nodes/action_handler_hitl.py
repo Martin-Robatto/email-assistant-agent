@@ -12,7 +12,6 @@ from email_assistant_hitl.tools import (
     search_events,
     update_event,
     Question,
-    Done,
 )
 
 
@@ -25,7 +24,6 @@ tools_by_name = {
     "search_events": search_events,
     "update_event": update_event,
     "Question": Question,
-    "Done": Done,
 }
 
 

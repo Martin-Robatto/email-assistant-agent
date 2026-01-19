@@ -14,11 +14,4 @@ class Question(BaseModel):
     content: str
 
 
-@tool
-class Done(BaseModel):
-    """Signal that the email workflow is complete.
-    
-    Use this tool when you have finished all actions (sent email,
-    scheduled meetings, etc.) and the workflow should end.
-    """
-    done: bool
+

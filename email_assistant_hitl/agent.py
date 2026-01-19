@@ -11,7 +11,7 @@ from email_assistant_hitl.nodes.agent_node_hitl import agent_node_hitl
 from email_assistant_hitl.nodes.action_handler_hitl import action_handler_hitl
 
 
-def should_respond(state: GraphState) -> Literal["agent_node_hitl", "review_notification", "__end__"]:
+def should_respond(state: GraphState) -> Literal["agent_node_hitl", "notify_handler_hitl", "__end__"]:
     """Route based on email classification.
     
     Args:
@@ -25,7 +25,7 @@ def should_respond(state: GraphState) -> Literal["agent_node_hitl", "review_noti
     if classification == "respond":
         return "agent_node_hitl"
     elif classification == "notify":
-        return "review_notification"
+        return "notify_handler_hitl"
     else:  # ignore
         return "__end__"
 
@@ -49,7 +49,7 @@ def should_continue_after_review(state: GraphState) -> Literal["agent_node_hitl"
         return "__end__"
 
 
-def should_continue_drafting(state: GraphState) -> Literal["review_action", "__end__"]:
+def should_continue_drafting(state: GraphState) -> Literal["action_handler_hitl", "__end__"]:
     """Determine if we should review the drafted action or end.
     
     Args:
@@ -62,11 +62,9 @@ def should_continue_drafting(state: GraphState) -> Literal["review_action", "__e
     last_message = messages[-1]
     
     if last_message.tool_calls:
-        for tool_call in last_message.tool_calls:
-            if tool_call["name"] == "Done":
-                return "__end__"
-        return "review_action"
+        return "action_handler_hitl"
     
+    # If no tool calls, the agent is done (sent a text response)
     return "__end__"
 
 
@@ -81,7 +79,7 @@ def should_continue_after_action_review(state: GraphState) -> Literal["agent_nod
         return "agent_node_hitl"
 
 
-def create_graph():
+def create_graph(checkpointer=None):
     """Create and compile the HITL-enabled agent graph.
     
     Uses conditional edges throughout for clear routing logic.
@@ -133,7 +131,7 @@ def create_graph():
         },
     )
     
-    # After review_action, check if user ignored or approved
+    # After action_handler_hitl, check if user ignored or approved
     workflow.add_conditional_edges(
         "action_handler_hitl",
         should_continue_after_action_review,
@@ -143,12 +141,12 @@ def create_graph():
         },
     )
     
-    memory = MemorySaver()
-    graph = workflow.compile(checkpointer=memory)
+    graph = workflow.compile(checkpointer=checkpointer)
     graph.get_graph().draw_mermaid_png(output_file_path="email_assistant_hitl/graph.png")
     
     return graph
 
 
 # Create the HITL graph instance
-graph = create_graph()
+checkpointer = MemorySaver()
+graph = create_graph(checkpointer=checkpointer)

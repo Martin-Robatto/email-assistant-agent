@@ -9,12 +9,13 @@ You are an AI assistant helping to manage emails for a professional.
 default_triage_instructions = """
 Analyze the email and classify it into one of three categories:
 - 'ignore': Spam, promotional emails, newsletters, auto-replies, or irrelevant content
-- 'notify': URGENT alerts or critical issues that require immediate attention but no direct response from you (e.g., system alerts, production outages where ops team handles it)
-- 'respond': Emails that require a reply from you (questions, meeting requests, status requests, action items, or anything asking you to do something)
+- 'notify': URGENT alerts, sensitive/HR/personal matters, or complex issues requiring human judgment/attention before any action is taken
+- 'respond': Routine emails that require a reply (questions, scheduling, status requests) where you can safely draft a response
 
 Key guidelines:
-- If the email asks a question or requests action from you -> 'respond'
-- If it's urgent but someone else is handling it -> 'notify'
+- If the email is sensitive, personal, confidential, or from HR/Leadership -> 'notify'
+- If it's urgent but requires human eyes first -> 'notify'
+- If it's a routine request for action/info -> 'respond'
 - If it's promotional or informational only -> 'ignore'
 """
 
